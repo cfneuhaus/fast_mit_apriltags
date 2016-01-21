@@ -5,7 +5,7 @@ This is a C++11 library for detecting AprilTags in images. It is a (faster) vari
 
 It only differs in the fact that some image processing operations, that were implemented "by hand" in the original library, have been replaced by OpenCV for improved performance. Additionally, a part of the computations was multithreaded using `std::thread`.
 
-The changes improve the performance *from around 5 fps to around 15 fps* for a 640x480 camera image on my (quad core) machine.
+The changes improve the performance **from around 5 fps to around 15 fps** for a 640x480 camera image on my (quad core) machine.
 
 # Copyright and License
 
