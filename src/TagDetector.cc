@@ -36,7 +36,6 @@
 #include <opencv/cv.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <boost/bind.hpp>
 
 //#define APRILTAGS_SHOW_TIMING
 #define APRILTAGS_USE_OPENCV
