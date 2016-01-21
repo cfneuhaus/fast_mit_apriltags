@@ -31,6 +31,7 @@ public:
 
   //! Constructor
   Edge() : pixelIdxA(), pixelIdxB(), cost() {}
+  explicit Edge(int idxa, int idxb, int c) : pixelIdxA(idxa), pixelIdxB(idxb), cost(c) {}
 
   //! Compare edges based on cost
   inline bool operator< (const Edge &other) const { return (cost < other.cost); }
@@ -48,6 +49,11 @@ public:
   static void calcEdges(float theta0, int x, int y,
 			const FloatImage& theta, const FloatImage& mag,
 			std::vector<Edge> &edges, size_t &nEdges);
+
+  //! Variant of calcEdges that uses push back on the vector instead of a manually kept fill count
+  static void calcEdges2(float theta0, int x, int y,
+      const FloatImage& theta, const FloatImage& mag,
+      std::vector<Edge> &edges);
 
   //! Process edges in order of increasing cost, merging clusters if we can do so without exceeding the thetaThresh.
   static void mergeEdges(std::vector<Edge> &edges, UnionFindSimple &uf, float tmin[], float tmax[], float mmin[], float mmax[]);

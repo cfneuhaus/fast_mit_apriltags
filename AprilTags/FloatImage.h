@@ -38,6 +38,7 @@ public:
   int getHeight() const { return height; }
   int getNumFloatImagePixels() const { return width*height; }
   const std::vector<float>& getFloatImagePixels() const { return pixels; }
+  std::vector<float>& getFloatImagePixels() { return pixels; }
 
   //! TODO: Fix decimateAvg function. DO NOT USE!
   void decimateAvg();

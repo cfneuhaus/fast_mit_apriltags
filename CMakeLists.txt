@@ -11,6 +11,9 @@ file(GLOB SOURCE_FILES "src/*.cc")
 include_directories(AprilTags . /opt/local/include)
 add_library(apriltags ${SOURCE_FILES})
 
+set_property(TARGET apriltags PROPERTY CXX_STANDARD 11)
+set_property(TARGET apriltags PROPERTY CXX_STANDARD_REQUIRED ON)
+
 find_package(OpenCV)
 include_directories(${OpenCV_INCLUDE_DIRS})
 target_link_libraries(apriltags ${OpenCV_LIBS}) #-pg) #-fopenmp)

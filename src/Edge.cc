@@ -66,6 +66,33 @@ void Edge::calcEdges(float theta0, int x, int y,
   }
 }
 
+void Edge::calcEdges2(float theta0, int x, int y,
+       const FloatImage& theta, const FloatImage& mag,
+       std::vector<Edge> &edges) {
+  int width = theta.getWidth();
+  int thisPixel = y*width+x;
+
+  // horizontal edge
+  int cost1 = edgeCost(theta0, theta.get(x+1,y), mag.get(x+1,y));
+  if (cost1 >= 0)
+    edges.push_back(Edge(thisPixel,y*width+x+1,cost1));
+
+  // vertical edge
+  int cost2 = edgeCost(theta0, theta.get(x, y+1), mag.get(x,y+1));
+  if (cost2 >= 0)
+    edges.push_back(Edge(thisPixel,(y+1)*width+x,cost2));
+
+  // downward diagonal edge
+  int cost3 = edgeCost(theta0, theta.get(x+1, y+1), mag.get(x+1,y+1));
+  if (cost3 >= 0)
+    edges.push_back(Edge(thisPixel,(y+1)*width+x+1,cost3));
+
+  // updward diagonal edge
+  int cost4 = (x == 0) ? -1 : edgeCost(theta0, theta.get(x-1, y+1), mag.get(x-1,y+1));
+  if (cost4 >= 0)
+    edges.push_back(Edge(thisPixel,(y+1)*width+x-1,cost4));
+}
+
 void Edge::mergeEdges(std::vector<Edge> &edges, UnionFindSimple &uf,
 		      float tmin[], float tmax[], float mmin[], float mmax[]) {
   for (size_t i = 0; i < edges.size(); i++) {
