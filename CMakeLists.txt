@@ -17,12 +17,16 @@ set_property(TARGET apriltags PROPERTY CXX_STANDARD_REQUIRED ON)
 find_package(OpenCV)
 include_directories(${OpenCV_INCLUDE_DIRS})
 target_link_libraries(apriltags ${OpenCV_LIBS}) #-pg) #-fopenmp)
+IF(UNIX)
 pods_use_pkg_config_packages(apriltags eigen3)
+endif(UNIX)
 
 if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   target_link_libraries(apriltags -L/opt/local/lib/) # MacPorts special treatment...
 else (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  IF(UNIX)
   pods_use_pkg_config_packages(apriltags libv4l2)
+  endif(UNIX)
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 pods_install_libraries(apriltags)
