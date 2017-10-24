@@ -241,7 +241,7 @@ std::vector<TagDetection> TagDetector::extractTags(const cv::Mat& image)
         cv::cartToPolar(dstX, dstY, dstMag, dstAng);
 
         cv::multiply(dstMag, dstMag, dstMag); // we probably dont really need that if we make sure
-                                              // the thresholds hereafter are sqrted
+        // the thresholds hereafter are sqrted
     }
 #else
 
@@ -871,21 +871,35 @@ std::vector<TagDetection> TagDetector::extractTags(const cv::Mat& image)
     return goodDetections;
 }
 
-
-bool TagDetector::verifyQuad(std::vector<std::pair<float, float> > p, cv::Mat gray)
+int TagDetector::verifyQuad(const std::vector<std::pair<float, float> >& p, const cv::Mat& gray)
 {
     std::vector<TagDetection> detections;
 
-    int width = gray.cols;
-    int height = gray.rows;
+    const float minx = std::min({ p[0].first, p[1].first, p[2].first, p[3].first });
+    const float maxx = std::max({ p[0].first, p[1].first, p[2].first, p[3].first });
+    const float miny = std::min({ p[0].second, p[1].second, p[2].second, p[3].second });
+    const float maxy = std::max({ p[0].second, p[1].second, p[2].second, p[3].second });
+
+    const int width = maxx - minx;
+    const int height = maxy - miny;
+
+    std::vector<std::pair<float, float> > pp;
+    pp.emplace_back(p[0].first - minx, p[0].second - miny);
+    pp.emplace_back(p[1].first - minx, p[1].second - miny);
+    pp.emplace_back(p[2].first - minx, p[2].second - miny);
+    pp.emplace_back(p[3].first - minx, p[3].second - miny);
+
+    if (width == 0 || height == 0)
+        return -1;
 
     AprilTags::FloatImage fimOrig(width, height);
     cv::Mat outp(height, width, CV_32FC1, &fimOrig.getFloatImagePixels()[0]);
-    gray.convertTo(outp, CV_32FC1);
+    cv::Rect ROI(minx, miny, width, height);
+    gray(ROI).convertTo(outp, CV_32FC1);
     outp /= 255.0f;
     FloatImage fim = fimOrig;
 
-    Quad quad = Quad(p, std::make_pair(width / 2, height / 2));
+    const Quad quad = Quad(pp, std::make_pair(width / 2, height / 2));
 
     // Find a threshold
     GrayModel blackModel, whiteModel;
@@ -938,9 +952,8 @@ bool TagDetector::verifyQuad(std::vector<std::pair<float, float> > p, cv::Mat gr
 
     if (thisTagDetection.good)
     {
-        return true;
+        return thisTagDetection.id;
     }
-    return false;
+    return -1;
 }
-
 } // namespace
