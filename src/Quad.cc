@@ -12,14 +12,14 @@ namespace AprilTags
 const float Quad::maxQuadAspectRatio = 32;
 
 Quad::Quad(
-    const std::vector<std::pair<float, float> >& p, const std::pair<float, float>& opticalCenter)
+    const std::vector<std::pair<float, float>>& p, const std::pair<float, float>& opticalCenter)
     : quadPoints(p)
     , segments()
     , observedPerimeter()
     , homography(opticalCenter)
 {
 #ifdef STABLE_H
-    std::vector<std::pair<float, float> > srcPts;
+    std::vector<std::pair<float, float>> srcPts;
     srcPts.push_back(std::make_pair(-1, -1));
     srcPts.push_back(std::make_pair(1, -1));
     srcPts.push_back(std::make_pair(1, 1));
@@ -71,7 +71,7 @@ void Quad::search(const FloatImage& fImage, std::vector<Segment*>& path, Segment
         if (path[4] == path[0])
         {
             // the 4 corners of the quad as computed by the intersection of segments.
-            std::vector<std::pair<float, float> > p(4);
+            std::vector<std::pair<float, float>> p(4);
             float calculatedPerimeter = 0;
             bool bad = false;
             for (int i = 0; i < 4; i++)

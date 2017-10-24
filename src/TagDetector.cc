@@ -49,7 +49,7 @@ namespace
 double getCurrentTime()
 {
     return std::chrono::duration_cast<std::chrono::milliseconds>(
-               std::chrono::system_clock::now().time_since_epoch())
+        std::chrono::system_clock::now().time_since_epoch())
         .count();
 }
 }
@@ -174,11 +174,11 @@ std::vector<TagDetection> TagDetector::extractTags(const cv::Mat& image)
     s0 = getCurrentTime();
 #endif
 
-//================================================================
-// Step two: Compute the local gradient. We store the direction and magnitude.
-// This step is quite sensitve to noise, since a few bad theta estimates will
-// break up segments, causing us to miss Quads. It is useful to do a Gaussian
-// low pass on this step even if we don't want it for encoding.
+    //================================================================
+    // Step two: Compute the local gradient. We store the direction and magnitude.
+    // This step is quite sensitve to noise, since a few bad theta estimates will
+    // break up segments, causing us to miss Quads. It is useful to do a Gaussian
+    // low pass on this step even if we don't want it for encoding.
 
 #ifdef APRILTAGS_SHOW_TIMING
     double s1 = getCurrentTime();
@@ -406,8 +406,8 @@ std::vector<TagDetection> TagDetector::extractTags(const cv::Mat& image)
     UnionFindSimple uf(fimSeg.getWidth() * fimSeg.getHeight());
     { // limit scope of storage
         /* Previously all this was on the stack, but this is 1.2MB for 320x240 images
-     * That's already a problem for OS X (default 512KB thread stack size),
-     * could be a problem elsewhere for bigger images... so store on heap */
+         * That's already a problem for OS X (default 512KB thread stack size),
+         * could be a problem elsewhere for bigger images... so store on heap */
         vector<float> storage(
             width * height * 4); // do all the memory in one big block, exception safe
         float* tmin = &storage[width * height * 0];
@@ -458,7 +458,7 @@ std::vector<TagDetection> TagDetector::extractTags(const cv::Mat& image)
     // Step four: Loop over the pixels again, collecting statistics for each cluster.
     // We will soon fit lines (segments) to these points.
 
-    map<int, vector<XYWeight> > clusters;
+    map<int, vector<XYWeight>> clusters;
     for (int y = 0; y + 1 < fimSeg.getHeight(); y++)
     {
         for (int x = 0; x + 1 < fimSeg.getWidth(); x++)
@@ -468,7 +468,7 @@ std::vector<TagDetection> TagDetector::extractTags(const cv::Mat& image)
 
             int rep = (int)uf.getRepresentative(y * fimSeg.getWidth() + x);
 
-            map<int, vector<XYWeight> >::iterator it = clusters.find(rep);
+            map<int, vector<XYWeight>>::iterator it = clusters.find(rep);
             if (it == clusters.end())
             {
                 clusters[rep] = vector<XYWeight>();
@@ -487,7 +487,7 @@ std::vector<TagDetection> TagDetector::extractTags(const cv::Mat& image)
     //================================================================
     // Step five: Loop over the clusters, fitting lines (which we call Segments).
     std::vector<Segment> segments; // used in Step six
-    std::map<int, std::vector<XYWeight> >::const_iterator clustersItr;
+    std::map<int, std::vector<XYWeight>>::const_iterator clustersItr;
     for (clustersItr = clusters.begin(); clustersItr != clusters.end(); clustersItr++)
     {
         std::vector<XYWeight> points = clustersItr->second;
@@ -871,7 +871,7 @@ std::vector<TagDetection> TagDetector::extractTags(const cv::Mat& image)
     return goodDetections;
 }
 
-int TagDetector::verifyQuad(const std::vector<std::pair<float, float> >& p, const cv::Mat& gray)
+int TagDetector::verifyQuad(const std::vector<std::pair<float, float>>& p, const cv::Mat& gray)
 {
     std::vector<TagDetection> detections;
 
@@ -883,7 +883,7 @@ int TagDetector::verifyQuad(const std::vector<std::pair<float, float> >& p, cons
     const int width = maxx - minx;
     const int height = maxy - miny;
 
-    std::vector<std::pair<float, float> > pp;
+    std::vector<std::pair<float, float>> pp;
     pp.emplace_back(p[0].first - minx, p[0].second - miny);
     pp.emplace_back(p[1].first - minx, p[1].second - miny);
     pp.emplace_back(p[2].first - minx, p[2].second - miny);
