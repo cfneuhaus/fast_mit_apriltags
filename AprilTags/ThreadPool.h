@@ -1,48 +1,50 @@
 #ifndef APRILTAG_THREADPOOL_H
 #define APRILTAG_THREADPOOL_H
 
-#include <thread>
-#include <mutex>
 #include <condition_variable>
 #include <deque>
+#include <functional>
+#include <mutex>
+#include <thread>
 
 namespace AprilTags
 {
 
 class ThreadPool;
 
-class ThreadPool {
+class ThreadPool
+{
 public:
-    ThreadPool(size_t threads=std::thread::hardware_concurrency()?std::thread::hardware_concurrency():2)
-        :   stop(false)
+    ThreadPool(size_t threads
+        = std::thread::hardware_concurrency() ? std::thread::hardware_concurrency() : 2)
+        : stop(false)
     {
-        numPushedTasks=0;
-        numFinishedTasks=0;
+        numPushedTasks = 0;
+        numFinishedTasks = 0;
 
 
-        for(size_t i = 0;i<threads;++i)
-            workers.push_back(std::thread([this](){
+        for (size_t i = 0; i < threads; ++i)
+            workers.push_back(std::thread([this]() {
                 std::function<void()> task;
-                while(true)
+                while (true)
                 {
-                    {   // acquire lock
-                        std::unique_lock<std::mutex>
-                            lock(queue_mutex);
+                    { // acquire lock
+                        std::unique_lock<std::mutex> lock(queue_mutex);
 
                         // look for a work item
-                        while(!stop && tasks.empty())
+                        while (!stop && tasks.empty())
                         { // if there are none wait for notification
                             condition.wait(lock);
                         }
 
-                        if(stop) // exit if the pool is stopped
+                        if (stop) // exit if the pool is stopped
                             return;
 
                         // get the task from the queue
                         task = tasks.front();
                         tasks.pop_front();
 
-                    }   // release lock
+                    } // release lock
 
                     // execute the task
                     task();
@@ -67,11 +69,10 @@ public:
         condition.notify_all();
 
         // join them
-        for(size_t i = 0;i<workers.size();++i)
+        for (size_t i = 0; i < workers.size(); ++i)
             workers[i].join();
     }
-    template<class F>
-    void pushTask(F f)
+    template <class F> void pushTask(F f)
     {
         numPushedTasks++;
         { // acquire lock
@@ -89,7 +90,7 @@ public:
     {
         std::unique_lock<std::mutex> lock(taskCountMutex);
 
-        while(numFinishedTasks!=numPushedTasks)
+        while (numFinishedTasks != numPushedTasks)
         {
             finishcondition.wait(lock);
         }
@@ -101,10 +102,10 @@ private:
     friend class Worker;
 
     // need to keep track of threads so we can join them
-    std::vector< std::thread > workers;
+    std::vector<std::thread> workers;
 
     // the task queue
-    std::deque< std::function<void()> > tasks;
+    std::deque<std::function<void()>> tasks;
 
     // synchronization
     std::mutex queue_mutex;
@@ -116,7 +117,6 @@ private:
     int numPushedTasks;
     int numFinishedTasks;
 };
-
 }
 
 
