@@ -33,15 +33,15 @@ public:
 
     //! Interpolate given that the lower left corner of the lower left cell is at (-1,-1) and the
     //! upper right corner of the upper right cell is at (1,1).
-    std::pair<float, float> interpolate(float x, float y);
+    std::pair<float, float> interpolate(float x, float y) const;
 
     //! Same as interpolate, except that the coordinates are interpreted between 0 and 1, instead of
     //! -1 and 1.
-    std::pair<float, float> interpolate01(float x, float y);
+    std::pair<float, float> interpolate01(float x, float y) const;
 
     //! Points for the quad (in pixel coordinates), in counter clockwise order. These points are the
     //! intersections of segments.
-    std::vector<std::pair<float, float>> quadPoints;
+    std::vector<std::pair<float, float> > quadPoints;
 
     //! Segments composing this quad
     std::vector<Segment*> segments;

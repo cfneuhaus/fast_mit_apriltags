@@ -12,14 +12,14 @@ namespace AprilTags
 const float Quad::maxQuadAspectRatio = 32;
 
 Quad::Quad(
-    const std::vector<std::pair<float, float>>& p, const std::pair<float, float>& opticalCenter)
+    const std::vector<std::pair<float, float> >& p, const std::pair<float, float>& opticalCenter)
     : quadPoints(p)
     , segments()
     , observedPerimeter()
     , homography(opticalCenter)
 {
 #ifdef STABLE_H
-    std::vector<std::pair<float, float>> srcPts;
+    std::vector<std::pair<float, float> > srcPts;
     srcPts.push_back(std::make_pair(-1, -1));
     srcPts.push_back(std::make_pair(1, -1));
     srcPts.push_back(std::make_pair(1, 1));
@@ -40,7 +40,7 @@ Quad::Quad(
 #endif
 }
 
-std::pair<float, float> Quad::interpolate(float x, float y)
+std::pair<float, float> Quad::interpolate(float x, float y) const
 {
 #ifdef INTERPOLATE
     Eigen::Vector2f r1 = p0 + p01 * (x + 1.) / 2.;
@@ -52,7 +52,7 @@ std::pair<float, float> Quad::interpolate(float x, float y)
 #endif
 }
 
-std::pair<float, float> Quad::interpolate01(float x, float y)
+std::pair<float, float> Quad::interpolate01(float x, float y) const
 {
     return interpolate(2 * x - 1, 2 * y - 1);
 }
@@ -61,7 +61,8 @@ void Quad::search(const FloatImage& fImage, std::vector<Segment*>& path, Segment
     std::vector<Quad>& quads, const std::pair<float, float>& opticalCenter)
 {
     // cout << "Searching segment " << parent.getId() << ", depth=" << depth << ", #children=" <<
-    // parent.children.size() << endl; terminal depth occurs when we've found four segments.
+    // parent.children.size() << endl;
+    // terminal depth occurs when we've found four segments.
     if (depth == 4)
     {
         // cout << "Entered terminal depth" << endl; // debug code
@@ -70,7 +71,7 @@ void Quad::search(const FloatImage& fImage, std::vector<Segment*>& path, Segment
         if (path[4] == path[0])
         {
             // the 4 corners of the quad as computed by the intersection of segments.
-            std::vector<std::pair<float, float>> p(4);
+            std::vector<std::pair<float, float> > p(4);
             float calculatedPerimeter = 0;
             bool bad = false;
             for (int i = 0; i < 4; i++)

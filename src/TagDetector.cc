@@ -49,7 +49,7 @@ namespace
 double getCurrentTime()
 {
     return std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::system_clock::now().time_since_epoch())
+               std::chrono::system_clock::now().time_since_epoch())
         .count();
 }
 }
@@ -174,11 +174,11 @@ std::vector<TagDetection> TagDetector::extractTags(const cv::Mat& image)
     s0 = getCurrentTime();
 #endif
 
-    //================================================================
-    // Step two: Compute the local gradient. We store the direction and magnitude.
-    // This step is quite sensitve to noise, since a few bad theta estimates will
-    // break up segments, causing us to miss Quads. It is useful to do a Gaussian
-    // low pass on this step even if we don't want it for encoding.
+//================================================================
+// Step two: Compute the local gradient. We store the direction and magnitude.
+// This step is quite sensitve to noise, since a few bad theta estimates will
+// break up segments, causing us to miss Quads. It is useful to do a Gaussian
+// low pass on this step even if we don't want it for encoding.
 
 #ifdef APRILTAGS_SHOW_TIMING
     double s1 = getCurrentTime();
@@ -241,7 +241,7 @@ std::vector<TagDetection> TagDetector::extractTags(const cv::Mat& image)
         cv::cartToPolar(dstX, dstY, dstMag, dstAng);
 
         cv::multiply(dstMag, dstMag, dstMag); // we probably dont really need that if we make sure
-                                              // the thresholds hereafter are sqrted
+        // the thresholds hereafter are sqrted
     }
 #else
 
@@ -303,10 +303,10 @@ std::vector<TagDetection> TagDetector::extractTags(const cv::Mat& image)
     s0 = getCurrentTime();
 #endif
 
-    //================================================================
-    // Step three. Extract edges by grouping pixels with similar
-    // thetas together. This is a greedy algorithm: we start with
-    // the most similar pixels.  We use 4-connectivity.
+//================================================================
+// Step three. Extract edges by grouping pixels with similar
+// thetas together. This is a greedy algorithm: we start with
+// the most similar pixels.  We use 4-connectivity.
 #ifdef APRILTAGS_USE_MULTITHREADING
     // size_t nEdges = 0;
 
@@ -406,8 +406,8 @@ std::vector<TagDetection> TagDetector::extractTags(const cv::Mat& image)
     UnionFindSimple uf(fimSeg.getWidth() * fimSeg.getHeight());
     { // limit scope of storage
         /* Previously all this was on the stack, but this is 1.2MB for 320x240 images
-         * That's already a problem for OS X (default 512KB thread stack size),
-         * could be a problem elsewhere for bigger images... so store on heap */
+     * That's already a problem for OS X (default 512KB thread stack size),
+     * could be a problem elsewhere for bigger images... so store on heap */
         vector<float> storage(
             width * height * 4); // do all the memory in one big block, exception safe
         float* tmin = &storage[width * height * 0];
@@ -458,7 +458,7 @@ std::vector<TagDetection> TagDetector::extractTags(const cv::Mat& image)
     // Step four: Loop over the pixels again, collecting statistics for each cluster.
     // We will soon fit lines (segments) to these points.
 
-    map<int, vector<XYWeight>> clusters;
+    map<int, vector<XYWeight> > clusters;
     for (int y = 0; y + 1 < fimSeg.getHeight(); y++)
     {
         for (int x = 0; x + 1 < fimSeg.getWidth(); x++)
@@ -468,7 +468,7 @@ std::vector<TagDetection> TagDetector::extractTags(const cv::Mat& image)
 
             int rep = (int)uf.getRepresentative(y * fimSeg.getWidth() + x);
 
-            map<int, vector<XYWeight>>::iterator it = clusters.find(rep);
+            map<int, vector<XYWeight> >::iterator it = clusters.find(rep);
             if (it == clusters.end())
             {
                 clusters[rep] = vector<XYWeight>();
@@ -487,7 +487,7 @@ std::vector<TagDetection> TagDetector::extractTags(const cv::Mat& image)
     //================================================================
     // Step five: Loop over the clusters, fitting lines (which we call Segments).
     std::vector<Segment> segments; // used in Step six
-    std::map<int, std::vector<XYWeight>>::const_iterator clustersItr;
+    std::map<int, std::vector<XYWeight> >::const_iterator clustersItr;
     for (clustersItr = clusters.begin(); clustersItr != clusters.end(); clustersItr++)
     {
         std::vector<XYWeight> points = clustersItr->second;
@@ -871,4 +871,89 @@ std::vector<TagDetection> TagDetector::extractTags(const cv::Mat& image)
     return goodDetections;
 }
 
+int TagDetector::verifyQuad(const std::vector<std::pair<float, float> >& p, const cv::Mat& gray)
+{
+    std::vector<TagDetection> detections;
+
+    const float minx = std::min({ p[0].first, p[1].first, p[2].first, p[3].first });
+    const float maxx = std::max({ p[0].first, p[1].first, p[2].first, p[3].first });
+    const float miny = std::min({ p[0].second, p[1].second, p[2].second, p[3].second });
+    const float maxy = std::max({ p[0].second, p[1].second, p[2].second, p[3].second });
+
+    const int width = maxx - minx;
+    const int height = maxy - miny;
+
+    std::vector<std::pair<float, float> > pp;
+    pp.emplace_back(p[0].first - minx, p[0].second - miny);
+    pp.emplace_back(p[1].first - minx, p[1].second - miny);
+    pp.emplace_back(p[2].first - minx, p[2].second - miny);
+    pp.emplace_back(p[3].first - minx, p[3].second - miny);
+
+    if (width == 0 || height == 0)
+        return -1;
+
+    AprilTags::FloatImage fimOrig(width, height);
+    cv::Mat outp(height, width, CV_32FC1, &fimOrig.getFloatImagePixels()[0]);
+    cv::Rect ROI(minx, miny, width, height);
+    gray(ROI).convertTo(outp, CV_32FC1);
+    outp /= 255.0f;
+    FloatImage fim = fimOrig;
+
+    const Quad quad = Quad(pp, std::make_pair(width / 2, height / 2));
+
+    // Find a threshold
+    GrayModel blackModel, whiteModel;
+    const int dd = 2 * thisTagFamily.blackBorder + thisTagFamily.dimension;
+
+    for (int iy = -1; iy <= dd; iy++)
+    {
+        float y = (iy + 0.5f) / dd;
+        for (int ix = -1; ix <= dd; ix++)
+        {
+            float x = (ix + 0.5f) / dd;
+            std::pair<float, float> pxy = quad.interpolate01(x, y);
+            int irx = (int)(pxy.first + 0.5);
+            int iry = (int)(pxy.second + 0.5);
+            if (irx < 0 || irx >= width || iry < 0 || iry >= height)
+                continue;
+            float v = fim.get(irx, iry);
+            if (iy == -1 || iy == dd || ix == -1 || ix == dd)
+                whiteModel.addObservation(x, y, v);
+            else if (iy == 0 || iy == (dd - 1) || ix == 0 || ix == (dd - 1))
+                blackModel.addObservation(x, y, v);
+        }
+    }
+
+    bool bad = false;
+    unsigned long long tagCode = 0;
+    for (int iy = thisTagFamily.dimension - 1; iy >= 0; iy--)
+    {
+        float y = (thisTagFamily.blackBorder + iy + 0.5f) / dd;
+        for (int ix = 0; ix < thisTagFamily.dimension; ix++)
+        {
+            float x = (thisTagFamily.blackBorder + ix + 0.5f) / dd;
+            std::pair<float, float> pxy = quad.interpolate01(x, y);
+            int irx = (int)(pxy.first + 0.5);
+            int iry = (int)(pxy.second + 0.5);
+            if (irx < 0 || irx >= width || iry < 0 || iry >= height)
+            {
+                return true;
+            }
+            float threshold = (blackModel.interpolate(x, y) + whiteModel.interpolate(x, y)) * 0.5f;
+            float v = fim.get(irx, iry);
+            tagCode = tagCode << 1;
+            if (v > threshold)
+                tagCode |= 1;
+        }
+    }
+
+    TagDetection thisTagDetection;
+    thisTagFamily.decode(thisTagDetection, tagCode);
+
+    if (thisTagDetection.good)
+    {
+        return thisTagDetection.id;
+    }
+    return -1;
+}
 } // namespace
