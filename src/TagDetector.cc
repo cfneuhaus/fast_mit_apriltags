@@ -807,4 +807,71 @@ std::vector<TagDetection> TagDetector::extractTags(const cv::Mat& image) {
     return goodDetections;
 }
 
+
+bool TagDetector::verifyQuad(std::vector<std::pair<float, float>> p, cv::Mat gray) {
+    std::vector<TagDetection> detections;
+
+    int width = gray.cols;
+    int height = gray.rows;
+
+    AprilTags::FloatImage fimOrig(width, height);
+    cv::Mat outp(height,width, CV_32FC1, &fimOrig.getFloatImagePixels()[0]);
+    gray.convertTo(outp, CV_32FC1);
+    outp /= 255.0f;
+    FloatImage fim = fimOrig;
+
+    Quad quad = Quad(p, std::make_pair(width/2,height/2));
+
+    // Find a threshold
+    GrayModel blackModel, whiteModel;
+    const int dd = 2 * thisTagFamily.blackBorder + thisTagFamily.dimension;
+
+    for (int iy = -1; iy <= dd; iy++) {
+        float y = (iy + 0.5f) / dd;
+        for (int ix = -1; ix <= dd; ix++) {
+            float x = (ix + 0.5f) / dd;
+            std::pair<float, float> pxy = quad.interpolate01(x, y);
+            int irx = (int) (pxy.first + 0.5);
+            int iry = (int) (pxy.second + 0.5);
+            if (irx < 0 || irx >= width || iry < 0 || iry >= height)
+                continue;
+            float v = fim.get(irx, iry);
+            if (iy == -1 || iy == dd || ix == -1 || ix == dd)
+                whiteModel.addObservation(x, y, v);
+            else if (iy == 0 || iy == (dd - 1) || ix == 0 ||
+                     ix == (dd - 1))
+                blackModel.addObservation(x, y, v);
+        }
+    }
+
+    bool bad = false;
+    unsigned long long tagCode = 0;
+    for (int iy = thisTagFamily.dimension - 1; iy >= 0; iy--) {
+        float y = (thisTagFamily.blackBorder + iy + 0.5f) / dd;
+        for (int ix = 0; ix < thisTagFamily.dimension; ix++) {
+            float x = (thisTagFamily.blackBorder + ix + 0.5f) / dd;
+            std::pair<float, float> pxy = quad.interpolate01(x, y);
+            int irx = (int) (pxy.first + 0.5);
+            int iry = (int) (pxy.second + 0.5);
+            if (irx < 0 || irx >= width || iry < 0 || iry >= height) {
+                return true;
+            }
+            float threshold = (blackModel.interpolate(x, y) +
+                               whiteModel.interpolate(x, y)) * 0.5f;
+            float v = fim.get(irx, iry);
+            tagCode = tagCode << 1;
+            if (v > threshold)
+                tagCode |= 1;
+        }
+    }
+
+    TagDetection thisTagDetection;
+    thisTagFamily.decode(thisTagDetection, tagCode);
+
+    if (thisTagDetection.good) {
+        return true;
+    }
+    return false;
+}
+
 } // namespace
