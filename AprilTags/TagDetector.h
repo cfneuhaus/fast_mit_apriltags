@@ -48,6 +48,7 @@ private:
 
     std::vector<Edge> edges;
     std::vector<std::vector<Edge> > edgeArrs;
+
     std::vector<float> storage;
 };
 

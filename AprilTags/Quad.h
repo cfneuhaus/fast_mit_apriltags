@@ -14,8 +14,8 @@ namespace AprilTags
 class FloatImage;
 class Segment;
 
-using std::min;
 using std::max;
+using std::min;
 
 //! Represents four segments that form a loop, and might be a tag.
 class Quad
@@ -28,7 +28,7 @@ public:
     //! Constructor
     /*! (x,y) are the optical center of the camera, which is
      *   needed to correctly compute the homography. */
-    Quad(const std::vector<std::pair<float, float> >& p,
+    Quad(const std::vector<std::pair<float, float>>& p,
         const std::pair<float, float>& opticalCenter);
 
     //! Interpolate given that the lower left corner of the lower left cell is at (-1,-1) and the
