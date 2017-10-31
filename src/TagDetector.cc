@@ -458,7 +458,7 @@ std::vector<TagDetection> TagDetector::extractTags(const cv::Mat& image)
     // Step four: Loop over the pixels again, collecting statistics for each cluster.
     // We will soon fit lines (segments) to these points.
 
-    map<int, vector<XYWeight> > clusters;
+    map<int, vector<XYWeight>> clusters;
     for (int y = 0; y + 1 < fimSeg.getHeight(); y++)
     {
         for (int x = 0; x + 1 < fimSeg.getWidth(); x++)
@@ -468,7 +468,7 @@ std::vector<TagDetection> TagDetector::extractTags(const cv::Mat& image)
 
             int rep = (int)uf.getRepresentative(y * fimSeg.getWidth() + x);
 
-            map<int, vector<XYWeight> >::iterator it = clusters.find(rep);
+            map<int, vector<XYWeight>>::iterator it = clusters.find(rep);
             if (it == clusters.end())
             {
                 clusters[rep] = vector<XYWeight>();
@@ -487,7 +487,7 @@ std::vector<TagDetection> TagDetector::extractTags(const cv::Mat& image)
     //================================================================
     // Step five: Loop over the clusters, fitting lines (which we call Segments).
     std::vector<Segment> segments; // used in Step six
-    std::map<int, std::vector<XYWeight> >::const_iterator clustersItr;
+    std::map<int, std::vector<XYWeight>>::const_iterator clustersItr;
     for (clustersItr = clusters.begin(); clustersItr != clusters.end(); clustersItr++)
     {
         std::vector<XYWeight> points = clustersItr->second;
@@ -871,7 +871,7 @@ std::vector<TagDetection> TagDetector::extractTags(const cv::Mat& image)
     return goodDetections;
 }
 
-int TagDetector::verifyQuad(const std::vector<std::pair<float, float> >& p, const cv::Mat& gray)
+int TagDetector::verifyQuad(const std::vector<std::pair<float, float>>& p, const cv::Mat& gray)
 {
     std::vector<TagDetection> detections;
 
@@ -883,14 +883,17 @@ int TagDetector::verifyQuad(const std::vector<std::pair<float, float> >& p, cons
     const int width = maxx - minx;
     const int height = maxy - miny;
 
-    std::vector<std::pair<float, float> > pp;
+    if (minx < 0 || miny < 0 || width <= 0 || height <= 0 || minx + width >= gray.cols
+        || miny + height >= gray.rows)
+    {
+        return -1;
+    }
+
+    std::vector<std::pair<float, float>> pp;
     pp.emplace_back(p[0].first - minx, p[0].second - miny);
     pp.emplace_back(p[1].first - minx, p[1].second - miny);
     pp.emplace_back(p[2].first - minx, p[2].second - miny);
     pp.emplace_back(p[3].first - minx, p[3].second - miny);
-
-    if (width == 0 || height == 0)
-        return -1;
 
     AprilTags::FloatImage fimOrig(width, height);
     cv::Mat outp(height, width, CV_32FC1, &fimOrig.getFloatImagePixels()[0]);
