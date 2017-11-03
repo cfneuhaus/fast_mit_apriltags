@@ -41,7 +41,7 @@ public:
 
     //! Points for the quad (in pixel coordinates), in counter clockwise order. These points are the
     //! intersections of segments.
-    std::vector<std::pair<float, float> > quadPoints;
+    std::vector<std::pair<float, float>> quadPoints;
 
     //! Segments composing this quad
     std::vector<Segment*> segments;

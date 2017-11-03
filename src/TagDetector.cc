@@ -49,7 +49,7 @@ namespace
 double getCurrentTime()
 {
     return std::chrono::duration_cast<std::chrono::milliseconds>(
-               std::chrono::system_clock::now().time_since_epoch())
+        std::chrono::system_clock::now().time_since_epoch())
         .count();
 }
 }
@@ -174,11 +174,11 @@ std::vector<TagDetection> TagDetector::extractTags(const cv::Mat& image)
     s0 = getCurrentTime();
 #endif
 
-//================================================================
-// Step two: Compute the local gradient. We store the direction and magnitude.
-// This step is quite sensitve to noise, since a few bad theta estimates will
-// break up segments, causing us to miss Quads. It is useful to do a Gaussian
-// low pass on this step even if we don't want it for encoding.
+    //================================================================
+    // Step two: Compute the local gradient. We store the direction and magnitude.
+    // This step is quite sensitve to noise, since a few bad theta estimates will
+    // break up segments, causing us to miss Quads. It is useful to do a Gaussian
+    // low pass on this step even if we don't want it for encoding.
 
 #ifdef APRILTAGS_SHOW_TIMING
     double s1 = getCurrentTime();
@@ -406,8 +406,8 @@ std::vector<TagDetection> TagDetector::extractTags(const cv::Mat& image)
     UnionFindSimple uf(fimSeg.getWidth() * fimSeg.getHeight());
     { // limit scope of storage
         /* Previously all this was on the stack, but this is 1.2MB for 320x240 images
-     * That's already a problem for OS X (default 512KB thread stack size),
-     * could be a problem elsewhere for bigger images... so store on heap */
+         * That's already a problem for OS X (default 512KB thread stack size),
+         * could be a problem elsewhere for bigger images... so store on heap */
         vector<float> storage(
             width * height * 4); // do all the memory in one big block, exception safe
         float* tmin = &storage[width * height * 0];

@@ -40,14 +40,14 @@ public:
     }
 
     std::vector<TagDetection> extractTags(const cv::Mat& image);
-    int verifyQuad(const std::vector<std::pair<float, float> >& p, const cv::Mat& gray);
+    int verifyQuad(const std::vector<std::pair<float, float>>& p, const cv::Mat& gray);
 
 private:
     ThreadPool threadPool;
 
 
     std::vector<Edge> edges;
-    std::vector<std::vector<Edge> > edgeArrs;
+    std::vector<std::vector<Edge>> edgeArrs;
 
     std::vector<float> storage;
 };

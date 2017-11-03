@@ -5,6 +5,7 @@
 #include <cfloat>
 #include <cmath>
 #include <utility>
+#include <vector>
 
 #include "GLine2D.h"
 #include "XYWeight.h"
