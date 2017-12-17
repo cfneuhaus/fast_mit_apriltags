@@ -40,8 +40,7 @@ public:
     }
 
     std::vector<TagDetection> extractTags(const cv::Mat& image);
-    int verifyQuad(
-        const std::vector<std::pair<float, float>>& p, const cv::Mat& gray, const cv::Rect& ROI);
+    int verifyQuad(const std::vector<std::pair<float, float>>& p, const cv::Mat& gray);
 
 private:
     ThreadPool threadPool;

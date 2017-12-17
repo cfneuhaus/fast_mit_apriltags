@@ -871,33 +871,17 @@ std::vector<TagDetection> TagDetector::extractTags(const cv::Mat& image)
     return goodDetections;
 }
 
-int TagDetector::verifyQuad(
-    const std::vector<std::pair<float, float>>& p, const cv::Mat& gray, const cv::Rect& ROI)
+int TagDetector::verifyQuad(const std::vector<std::pair<float, float>>& p, const cv::Mat& gray)
 {
     std::vector<TagDetection> detections;
-
-    const int minx = ROI.x;
-    const int miny = ROI.y;
-    const int height = ROI.height;
-    const int width = ROI.width;
-
-    std::vector<std::pair<float, float>> pp;
-    pp.emplace_back(p[0].first - minx, p[0].second - miny);
-    pp.emplace_back(p[1].first - minx, p[1].second - miny);
-    pp.emplace_back(p[2].first - minx, p[2].second - miny);
-    pp.emplace_back(p[3].first - minx, p[3].second - miny);
-
-    AprilTags::FloatImage fimOrig(width, height);
-    cv::Mat outp(height, width, CV_32FC1, &fimOrig.getFloatImagePixels()[0]);
-
-    gray(ROI).convertTo(outp, CV_32FC1);
-    FloatImage fim = fimOrig;
-
-    const Quad quad = Quad(pp, std::make_pair(width / 2, height / 2));
+    const int width = gray.cols;
+    const int height = gray.rows;
+    const Quad quad = Quad(p, std::make_pair(width / 2, height / 2));
 
     // Find a threshold
     GrayModel blackModel, whiteModel;
     const int dd = 2 * thisTagFamily.blackBorder + thisTagFamily.dimension;
+
 
     for (int iy = -1; iy <= dd; iy++)
     {
@@ -910,7 +894,7 @@ int TagDetector::verifyQuad(
             int iry = (int)(pxy.second + 0.5);
             if (irx < 0 || irx >= width || iry < 0 || iry >= height)
                 continue;
-            float v = fim.get(irx, iry);
+            auto v = gray.at<uchar>(iry, irx);
             if (iy == -1 || iy == dd || ix == -1 || ix == dd)
                 whiteModel.addObservation(x, y, v);
             else if (iy == 0 || iy == (dd - 1) || ix == 0 || ix == (dd - 1))
@@ -934,7 +918,7 @@ int TagDetector::verifyQuad(
                 return true;
             }
             float threshold = (blackModel.interpolate(x, y) + whiteModel.interpolate(x, y)) * 0.5f;
-            float v = fim.get(irx, iry);
+            auto v = gray.at<uchar>(iry, irx);
             tagCode = tagCode << 1;
             if (v > threshold)
                 tagCode |= 1;
