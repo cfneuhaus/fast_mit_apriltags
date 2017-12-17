@@ -49,7 +49,7 @@ namespace
 double getCurrentTime()
 {
     return std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::system_clock::now().time_since_epoch())
+               std::chrono::system_clock::now().time_since_epoch())
         .count();
 }
 }
@@ -174,11 +174,11 @@ std::vector<TagDetection> TagDetector::extractTags(const cv::Mat& image)
     s0 = getCurrentTime();
 #endif
 
-    //================================================================
-    // Step two: Compute the local gradient. We store the direction and magnitude.
-    // This step is quite sensitve to noise, since a few bad theta estimates will
-    // break up segments, causing us to miss Quads. It is useful to do a Gaussian
-    // low pass on this step even if we don't want it for encoding.
+//================================================================
+// Step two: Compute the local gradient. We store the direction and magnitude.
+// This step is quite sensitve to noise, since a few bad theta estimates will
+// break up segments, causing us to miss Quads. It is useful to do a Gaussian
+// low pass on this step even if we don't want it for encoding.
 
 #ifdef APRILTAGS_SHOW_TIMING
     double s1 = getCurrentTime();
@@ -874,39 +874,14 @@ std::vector<TagDetection> TagDetector::extractTags(const cv::Mat& image)
 int TagDetector::verifyQuad(const std::vector<std::pair<float, float>>& p, const cv::Mat& gray)
 {
     std::vector<TagDetection> detections;
-
-    const float minx = std::min({ p[0].first, p[1].first, p[2].first, p[3].first });
-    const float maxx = std::max({ p[0].first, p[1].first, p[2].first, p[3].first });
-    const float miny = std::min({ p[0].second, p[1].second, p[2].second, p[3].second });
-    const float maxy = std::max({ p[0].second, p[1].second, p[2].second, p[3].second });
-
-    const int width = maxx - minx;
-    const int height = maxy - miny;
-
-    if (minx < 0 || miny < 0 || width <= 0 || height <= 0 || minx + width >= gray.cols
-        || miny + height >= gray.rows)
-    {
-        return -1;
-    }
-
-    std::vector<std::pair<float, float>> pp;
-    pp.emplace_back(p[0].first - minx, p[0].second - miny);
-    pp.emplace_back(p[1].first - minx, p[1].second - miny);
-    pp.emplace_back(p[2].first - minx, p[2].second - miny);
-    pp.emplace_back(p[3].first - minx, p[3].second - miny);
-
-    AprilTags::FloatImage fimOrig(width, height);
-    cv::Mat outp(height, width, CV_32FC1, &fimOrig.getFloatImagePixels()[0]);
-    cv::Rect ROI(minx, miny, width, height);
-    gray(ROI).convertTo(outp, CV_32FC1);
-    outp /= 255.0f;
-    FloatImage fim = fimOrig;
-
-    const Quad quad = Quad(pp, std::make_pair(width / 2, height / 2));
+    const int width = gray.cols;
+    const int height = gray.rows;
+    const Quad quad = Quad(p, std::make_pair(width / 2, height / 2));
 
     // Find a threshold
     GrayModel blackModel, whiteModel;
     const int dd = 2 * thisTagFamily.blackBorder + thisTagFamily.dimension;
+
 
     for (int iy = -1; iy <= dd; iy++)
     {
@@ -919,7 +894,7 @@ int TagDetector::verifyQuad(const std::vector<std::pair<float, float>>& p, const
             int iry = (int)(pxy.second + 0.5);
             if (irx < 0 || irx >= width || iry < 0 || iry >= height)
                 continue;
-            float v = fim.get(irx, iry);
+            auto v = gray.at<uchar>(iry, irx);
             if (iy == -1 || iy == dd || ix == -1 || ix == dd)
                 whiteModel.addObservation(x, y, v);
             else if (iy == 0 || iy == (dd - 1) || ix == 0 || ix == (dd - 1))
@@ -943,7 +918,7 @@ int TagDetector::verifyQuad(const std::vector<std::pair<float, float>>& p, const
                 return true;
             }
             float threshold = (blackModel.interpolate(x, y) + whiteModel.interpolate(x, y)) * 0.5f;
-            float v = fim.get(irx, iry);
+            auto v = gray.at<uchar>(iry, irx);
             tagCode = tagCode << 1;
             if (v > threshold)
                 tagCode |= 1;
