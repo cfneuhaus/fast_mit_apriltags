@@ -7,7 +7,7 @@ add_library(apriltags ${SOURCE_FILES})
 set_property(TARGET apriltags PROPERTY CXX_STANDARD 11)
 set_property(TARGET apriltags PROPERTY CXX_STANDARD_REQUIRED ON)
 
-find_package(OpenCV)
+find_package( OpenCV REQUIRED core imgproc calib3d optflow highgui)
 find_package(Eigen3 REQUIRED NO_MODULE)
 
 target_include_directories(apriltags PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
