@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.6)
 project(fast_mit_apriltags)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
+
 file(GLOB SOURCE_FILES "src/*.cc")
 add_library(apriltags ${SOURCE_FILES})
 
