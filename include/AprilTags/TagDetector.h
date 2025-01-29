@@ -22,8 +22,8 @@ public:
 
     //! Constructor
     // note: TagFamily is instantiated here from TagCodes
-    TagDetector(const TagCodes& tagCodes)
-        : thisTagFamily(tagCodes)
+    TagDetector(const TagCodes& tagCodes, int blackBorder = 1)
+        : thisTagFamily(tagCodes, blackBorder)
     {
         // these are just rough guesses
         const int expected_width = 1024;

@@ -26,8 +26,8 @@ TagFamily *tag36h11 = new TagFamily(tagCodes36h11);
 namespace AprilTags
 {
 
-TagFamily::TagFamily(const TagCodes& tagCodes)
-    : blackBorder(1)
+TagFamily::TagFamily(const TagCodes& tagCodes, int blackBorder)
+    : blackBorder(blackBorder)
     , bits(tagCodes.bits)
     , dimension((int)std::sqrt((float)bits))
     , minimumHammingDistance(tagCodes.minHammingDistance)
