@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.6)
 project(fast_mit_apriltags)
 
+option(BUILD_EXAMPLE "Build the fast_mit_apriltags example" OFF)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS "ON")
 
 file(GLOB SOURCE_FILES "src/*.cc")
@@ -16,4 +18,6 @@ target_include_directories(apriltags PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(apriltags PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/AprilTags)
 target_link_libraries(apriltags Eigen3::Eigen ${OpenCV_LIBS})
 
-add_subdirectory(example)
+if(BUILD_EXAMPLE)
+   add_subdirectory(example)
+endif()
