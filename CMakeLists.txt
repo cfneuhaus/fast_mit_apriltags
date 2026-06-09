@@ -11,7 +11,14 @@ add_library(apriltags ${SOURCE_FILES})
 set_property(TARGET apriltags PROPERTY CXX_STANDARD 11)
 set_property(TARGET apriltags PROPERTY CXX_STANDARD_REQUIRED ON)
 
-find_package( OpenCV REQUIRED core imgproc calib3d highgui)
+find_package(OpenCV REQUIRED CONFIG)
+
+if(OpenCV_VERSION_MAJOR GREATER_EQUAL 5)
+  find_package(OpenCV REQUIRED COMPONENTS core imgproc calib highgui)
+else()
+  find_package(OpenCV REQUIRED COMPONENTS core imgproc calib3d highgui)
+endif()
+
 find_package(Eigen3 REQUIRED NO_MODULE)
 
 target_compile_definitions(apriltags PUBLIC _USE_MATH_DEFINES)
